@@ -15,10 +15,10 @@ public:
     uint32 rewardtimer = urand(2 * HOUR*IN_MILLISECONDS, 4 * HOUR*IN_MILLISECONDS);
     int32 roll = urand(1, 1000);
 
-    void UpdatePlayer(Player* player, uint32 p_time)
+    void OnBeforePlayerUpdate(Player* player, uint32 p_time)
     {
 
-        if (!sConfigMgr->GetBoolDefault("PremiumAccount", true))
+        if (!sConfigMgr->GetBoolDefault("RewardSystemEnable", true))
             return;
         {
             if (rewardtimer <= p_time)
