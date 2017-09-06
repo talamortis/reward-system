@@ -1,6 +1,6 @@
 # Reward System
 
-This is a module for [AzerothCore](http://www.azerothcore.org) that adds some duel reset features.
+This is a module for [AzerothCore](http://www.azerothcore.org) that adds items for players that have stayed logged in the x amount of time.
 
 Current features:
 
