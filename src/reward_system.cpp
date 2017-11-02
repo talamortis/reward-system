@@ -25,7 +25,8 @@ public:
             {
                 roll = urand(1, 1000); //Lets make a random number from 1 - 1000
                 QueryResult result = CharacterDatabase.PQuery("SELECT item, quantity FROM reward_system WHERE roll = '%u'", roll);
-
+                rewardtimer = urand(2 * HOUR*IN_MILLISECONDS, 4 * HOUR*IN_MILLISECONDS);
+				
                 if (!result || player->isAFK())
                     return;
                 else
@@ -38,7 +39,6 @@ public:
                     // now lets add the item
                     player->AddItem(pItem, quantity);
 
-                    rewardtimer = urand(2 * HOUR*IN_MILLISECONDS, 4 * HOUR*IN_MILLISECONDS);
                     ChatHandler(player->GetSession()).PSendSysMessage("You have rolled %u which gave you item %u", roll, pItem);
                 }
             }
