@@ -6,3 +6,10 @@
 #        Default:     1  - (Enabled)
 #                     0  - (Disabled)
 RewardSystemEnable = 1
+
+#
+#    MaxRoll
+#        Description: Can alter the max roll for players
+#        Default:     1000  - (Enabled)
+#                     
+MaxRoll = 1000
