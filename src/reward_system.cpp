@@ -7,39 +7,48 @@
 #include "Define.h"
 #include "GossipDef.h"
 
+int32 roll;
+bool RewardSystem_Enable;
+uint32 Max_roll;
+
 class reward_system : public PlayerScript
 {
 public:
     reward_system() : PlayerScript("rewardsystem") {}
 
     uint32 rewardtimer = urand(2 * HOUR*IN_MILLISECONDS, 4 * HOUR*IN_MILLISECONDS);
-    int32 roll = urand(1, 1000);
 
     void OnBeforePlayerUpdate(Player* player, uint32 p_time)
     {
 
-        if (!sConfigMgr->GetBoolDefault("RewardSystemEnable", true))
+        if (!RewardSystem_Enable)
             return;
         {
             if (rewardtimer <= p_time)
             {
-                roll = urand(1, 1000); //Lets make a random number from 1 - 1000
+                roll = urand(1, Max_roll); //Lets make a random number from 1 - 
                 QueryResult result = CharacterDatabase.PQuery("SELECT item, quantity FROM reward_system WHERE roll = '%u'", roll);
                 rewardtimer = urand(2 * HOUR*IN_MILLISECONDS, 4 * HOUR*IN_MILLISECONDS);
 				
                 if (!result || player->isAFK())
+                {
                     return;
+                } 
                 else
                 {
-                    //Lets now get the item
-                    Field* fields = result->Fetch();
-                    uint32 pItem = fields[0].GetInt32();
-                    uint32 quantity = fields[1].GetInt32();
+                    do
+                    {
+                        //Lets now get the item
+                        Field* fields = result->Fetch();
+                        uint32 pItem = fields[0].GetInt32();
+                        uint32 quantity = fields[1].GetInt32();
 
-                    // now lets add the item
-                    player->AddItem(pItem, quantity);
+                        // now lets add the item
+                        player->AddItem(pItem, quantity);
 
-                    ChatHandler(player->GetSession()).PSendSysMessage("You have rolled %u which gave you item %u", roll, pItem);
+                        ChatHandler(player->GetSession()).PSendSysMessage("You have rolled %u which gave you item %u", roll, pItem);
+
+                    } while (result->NextRow());
                 }
             }
             else
@@ -62,6 +71,9 @@ public:
             sConfigMgr->LoadMore(cfg_def_file.c_str());
 
             sConfigMgr->LoadMore(cfg_file.c_str());
+
+            RewardSystem_Enable = sConfigMgr->GetBoolDefault("RewardSystemEnable", true);
+            Max_roll = sConfigMgr->GetIntDefault("MaxRoll", 1000);
         }
     }
 };
