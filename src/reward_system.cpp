@@ -73,7 +73,13 @@ public:
     void OnBeforeConfigLoad(bool reload) override
     {
         if (!reload) {
-            std::string cfg_file = "reward_system.conf";
+            std::string conf_path = _CONF_DIR;
+            std::string cfg_file = conf_path + "/reward_system.conf";
+
+#ifdef WIN32
+            cfg_file = "reward_system.conf";
+#endif // WIN32
+
             std::string cfg_def_file = cfg_file + ".dist";
 
             sConfigMgr->LoadMore(cfg_def_file.c_str());
