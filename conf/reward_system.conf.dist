@@ -13,3 +13,17 @@ RewardSystemEnable = 1
 #        Default:     1000  - (Enabled)
 #                     
 MaxRoll = 1000
+
+#
+#    MinTime
+#        Description: Min Time in Hours before the random roll will take place
+#        Default:     2  
+#                     
+MinTime = 2
+
+#
+#    MaxTime
+#        Description: Max Time in Hours before the random roll will take place
+#        Default:     4  
+#                     
+MaxTime = 4

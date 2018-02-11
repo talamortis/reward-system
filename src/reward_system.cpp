@@ -10,49 +10,57 @@
 int32 roll;
 bool RewardSystem_Enable;
 uint32 Max_roll;
+uint32 min_time;
+uint32 max_time;
 
 class reward_system : public PlayerScript
 {
 public:
     reward_system() : PlayerScript("rewardsystem") {}
 
-    uint32 rewardtimer = urand(2 * HOUR*IN_MILLISECONDS, 4 * HOUR*IN_MILLISECONDS);
+    uint32 rewardtimer = urand(min_time * HOUR*IN_MILLISECONDS, max_time * HOUR*IN_MILLISECONDS);
 
-    void OnBeforePlayerUpdate(Player* player, uint32 p_time)
+    void OnBeforeUpdate(Player* player, uint32 p_time)
     {
-
-        if (!RewardSystem_Enable)
-            return;
+        if (RewardSystem_Enable)
         {
-            if (rewardtimer <= p_time)
+            if (rewardtimer > 0)
             {
-                roll = urand(1, Max_roll); //Lets make a random number from 1 - 
-                QueryResult result = CharacterDatabase.PQuery("SELECT item, quantity FROM reward_system WHERE roll = '%u'", roll);
-                rewardtimer = urand(2 * HOUR*IN_MILLISECONDS, 4 * HOUR*IN_MILLISECONDS);
-				
-                if (!result || player->isAFK())
-                {
+                if (player->isAFK())
                     return;
-                } 
-                else
+
+                if (rewardtimer <= p_time)
                 {
+                    roll = urand(1, Max_roll);
+
+                    QueryResult result = CharacterDatabase.PQuery("SELECT item, quantity FROM reward_system WHERE roll = '%u'", roll);
+
+                    if (!result)
+                    {
+                        ChatHandler(player->GetSession()).PSendSysMessage("better luck next time your roll was %u", roll);
+                        rewardtimer = urand(min_time * HOUR*IN_MILLISECONDS, max_time * HOUR*IN_MILLISECONDS);
+                        return;
+                    }
+
+                    //Lets now get the item
+
                     do
                     {
-                        //Lets now get the item
                         Field* fields = result->Fetch();
                         uint32 pItem = fields[0].GetInt32();
                         uint32 quantity = fields[1].GetInt32();
 
                         // now lets add the item
                         player->AddItem(pItem, quantity);
-
-                        ChatHandler(player->GetSession()).PSendSysMessage("You have rolled %u which gave you item %u", roll, pItem);
-
+                        ChatHandler(player->GetSession()).PSendSysMessage("Congratulations you have won with a roll of %u", roll);
                     } while (result->NextRow());
+
+
+                    rewardtimer = urand(min_time * HOUR*IN_MILLISECONDS, max_time * HOUR*IN_MILLISECONDS);
                 }
+                else  rewardtimer -= p_time;
             }
-            else
-                rewardtimer -= p_time;
+
         }
     }
 };
@@ -74,6 +82,8 @@ public:
 
             RewardSystem_Enable = sConfigMgr->GetBoolDefault("RewardSystemEnable", true);
             Max_roll = sConfigMgr->GetIntDefault("MaxRoll", 1000);
+            min_time = sConfigMgr->GetIntDefault("MinTime", 2);
+            max_time = sConfigMgr->GetIntDefault("MaxTime", 4);
         }
     }
 };
