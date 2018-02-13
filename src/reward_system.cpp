@@ -8,6 +8,7 @@
 #include "GossipDef.h"
 
 bool RewardSystem_Enable;
+uint32 Max_roll;
 
 class reward_system : public PlayerScript
 {
@@ -16,7 +17,6 @@ public:
 
     uint32 RewardTimer;
     int32 roll;
-    uint32 Max_roll;
 
     void OnLogin(Player* p)
     {
@@ -49,7 +49,6 @@ public:
                     }
 
                     //Lets now get the item
-
                     do
                     {
                         Field* fields = result->Fetch();
@@ -90,6 +89,7 @@ public:
             sConfigMgr->LoadMore(cfg_def_file.c_str());
             sConfigMgr->LoadMore(cfg_file.c_str());
             RewardSystem_Enable = sConfigMgr->GetBoolDefault("RewardSystemEnable", true);
+            Max_roll = sConfigMgr->GetIntDefault("MaxRoll", 1000);
         }
     }
 };

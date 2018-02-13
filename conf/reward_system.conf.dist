@@ -13,3 +13,10 @@ RewardSystemEnable = 1
 #        Default:     1  - (Enabled)
 #                     
 RewardTime = 1
+
+#
+#    MaxRoll
+#        Description: Max roll the player will do
+#        Default:     1000  - (Enabled)
+#                     
+MaxRoll = 1000
