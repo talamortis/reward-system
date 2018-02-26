@@ -6,67 +6,60 @@
 #include "ScriptMgr.h"
 #include "Define.h"
 #include "GossipDef.h"
+#include "DataMap.h"
 
 bool RewardSystem_Enable;
 uint32 Max_roll;
+
+class RewardTimer : public DataMap::Base
+{
+public:
+    RewardTimer() { Reset(); }
+    void Reset()
+    {
+        timer = static_cast<uint32>(sConfigMgr->GetIntDefault("RewardTime", 1))*HOUR*IN_MILLISECONDS;
+    }
+    uint32 timer;
+};
 
 class reward_system : public PlayerScript
 {
 public:
     reward_system() : PlayerScript("rewardsystem") {}
 
-    uint32 RewardTimer;
-    int32 roll;
-
-    void OnLogin(Player* p)
+    void OnBeforeUpdate(Player* player, uint32 p_time) override
     {
-        if (RewardSystem_Enable)
-        {
-            ChatHandler(p->GetSession()).SendSysMessage("This server is running the |cff4CFF00Player Reward System |rmodule.");
-            RewardTimer = (sConfigMgr->GetIntDefault("RewardTime", 1)*HOUR*IN_MILLISECONDS);
-        }
-    }
+        if (!RewardSystem_Enable)
+            return;
+        if (player->isAFK())
+            return;
 
-    void OnBeforeUpdate(Player* player, uint32 p_time)
-    {
-        if (RewardSystem_Enable)
+        RewardTimer* rewardtimer = p->CustomData.GetDefault<RewardTimer>("RewardTimer");
+        if (rewardtimer->timer <= p_time)
         {
-            if (RewardTimer > 0)
+            rewardtimer->Reset();
+
+            uint32 roll = urand(1, Max_roll); //Lets make a random number from 1 to Max_roll
+            QueryResult result = CharacterDatabase.PQuery("SELECT item, quantity FROM reward_system WHERE roll = %u", roll);
+            if (!result)
+                return;
+
+            do
             {
-                if (player->isAFK())
-                    return;
+                //Lets now get the item
+                Field* fields = result->Fetch();
+                uint32 item = fields[0].GetUInt32();
+                uint32 quantity = fields[1].GetUInt32();
 
-                if (RewardTimer <= p_time)
-                {
-                    roll = urand(1, Max_roll);
-                    QueryResult result = CharacterDatabase.PQuery("SELECT item, quantity FROM reward_system WHERE roll = '%u'", roll);
+                // now lets add the item
+                // TODO: What to do if player bags are full?
+                player->AddItem(item, quantity);
+            } while (result->NextRow());
 
-                    if (!result)
-                    {
-                        ChatHandler(player->GetSession()).PSendSysMessage("better luck next time your roll was %u", roll);
-                        RewardTimer = (sConfigMgr->GetIntDefault("RewardTime", 1)*HOUR*IN_MILLISECONDS);
-                        return;
-                    }
-
-                    //Lets now get the item
-                    do
-                    {
-                        Field* fields = result->Fetch();
-                        uint32 pItem = fields[0].GetInt32();
-                        uint32 quantity = fields[1].GetInt32();
-
-                        // now lets add the item
-                        player->AddItem(pItem, quantity);
-                        ChatHandler(player->GetSession()).PSendSysMessage("Congratulations you have won with a roll of %u", roll);
-                    } while (result->NextRow());
-
-
-                    RewardTimer = (sConfigMgr->GetIntDefault("RewardTime", 1)*HOUR*IN_MILLISECONDS);
-                }
-                else  RewardTimer -= p_time;
-            }
-
+            ChatHandler(player->GetSession()).PSendSysMessage("Your playtime has earned you a reward!");
         }
+        else
+            rewardtimer->timer -= p_time;
     }
 };
 
