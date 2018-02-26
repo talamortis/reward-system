@@ -17,7 +17,7 @@ public:
     RewardTimer() { Reset(); }
     void Reset()
     {
-        timer = urand(2 * HOUR*IN_MILLISECONDS, 4 * HOUR*IN_MILLISECONDS);
+        timer = static_cast<uint32>(sConfigMgr->GetIntDefault("RewardTime", 1))*HOUR*IN_MILLISECONDS;
     }
     uint32 timer;
 };
