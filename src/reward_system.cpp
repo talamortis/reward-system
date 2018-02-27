@@ -34,7 +34,7 @@ public:
         if (player->isAFK())
             return;
 
-        RewardTimer* rewardtimer = p->CustomData.GetDefault<RewardTimer>("RewardTimer");
+        RewardTimer* rewardtimer = player->CustomData.GetDefault<RewardTimer>("RewardTimer");
         if (rewardtimer->timer <= p_time)
         {
             rewardtimer->Reset();
