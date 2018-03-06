@@ -1,4 +1,4 @@
-//Reward system made by Talamortis
+﻿//Reward system made by Talamortis
 
 #include "Configuration/Config.h"
 #include "Player.h"
@@ -42,6 +42,7 @@ public:
             uint32 roll = urand(1, Max_roll); //Lets make a random number from 1 to Max_roll
             QueryResult result = CharacterDatabase.PQuery("SELECT item, quantity FROM reward_system WHERE roll = %u", roll);
             if (!result)
+                ChatHandler(player->GetSession()).PSendSysMessage("Better luck next time! Your roll was %u", roll);
                 return;
 
             do
